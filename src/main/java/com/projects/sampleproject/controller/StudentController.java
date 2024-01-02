@@ -1,78 +1,55 @@
 package com.projects.sampleproject.controller;
 
-import com.projects.sampleproject.dao.StudentDao;
+import com.projects.sampleproject.dto.StudentCreateReqDto;
+import com.projects.sampleproject.dto.StudentResDto;
 import com.projects.sampleproject.model.Student;
+import com.projects.sampleproject.service.StudentService;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
+@Validated
 @RestController
 @RequestMapping("/student")
 public class StudentController {
 
-    private final StudentDao studentDao;
+    private final StudentService studentService;
 
-    public StudentController(StudentDao studentDao) {
-        this.studentDao = studentDao;
+    public StudentController(StudentService studentService) {
+        this.studentService = studentService;
     }
 
     @PostMapping
-    public Student createStudent(@RequestBody Student student) {
-
-        return studentDao.save(student);
+    public Student createStudent(@Valid @RequestBody StudentCreateReqDto studentCreateReqDto) {
+        return studentService.createStudent(studentCreateReqDto);
     }
 
     @GetMapping
     public List<Student> gelAllStudent() {
-
-        return studentDao.findAll();
+        return studentService.gelAllStudent();
     }
 
     @GetMapping("/{studentId}")
     public Student getStudentById(@PathVariable Long studentId) {
-        Optional<Student> optStudent = studentDao.findById(studentId);
-        if (optStudent.isPresent()) {
-            return optStudent.get();
-        } else {
-            throw new RuntimeException("Student not found for given ID");
-        }
+        return studentService.getStudentById(studentId);
     }
 
     @PutMapping("/{studentId}")
     public Student updateStudent(@PathVariable Long studentId, @RequestBody Student student) {
-        if (studentId == null) {
-            throw new RuntimeException("Student ID null");
-        } else if (studentId != student.getStudentId()) {
-            throw new RuntimeException("Student ID mismatch");
-        } else {
-
-            Optional<Student> optStudent = studentDao.findById(studentId);
-            if (optStudent.isPresent()) {
-
-                Student st = optStudent.get();
-                st.setStudentName(student.getStudentName());
-                st.setAge(student.getAge());
-                st.setGrade(student.getGrade());
-
-                return studentDao.save(st);
-
-            } else {
-                throw new RuntimeException("Student not found for given ID");
-            }
-
-        }
+       return studentService.updateStudent(studentId,student);
     }
 
     @DeleteMapping("/{studentId}")
     public String deleteStudent(@PathVariable Long studentId) {
-        Optional<Student> optStudent = studentDao.findById(studentId);
-        if (optStudent.isPresent()) {
-            studentDao.deleteById(studentId);
-            return "Student deleted";
-        } else {
-            throw new RuntimeException("Student not found for given ID");
-        }
+        return studentService.deleteStudent(studentId);
+    }
+
+    @GetMapping("/custom-students")
+    public List<StudentResDto> getAllCustomStudents(){
+        return studentService.getAllCustomStudents();
     }
 
 }
